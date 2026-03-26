@@ -1,101 +1,68 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import DotNav from "@/components/ui/DotNav";
+import Hero from "@/components/sections/Hero";
+import TheProblem from "@/components/sections/TheProblem";
+import ThrowSimulator from "@/components/sections/ThrowSimulator";
+import EnterEM from "@/components/sections/EnterEM";
+import EMConvergence from "@/components/sections/EMConvergence";
+import OptimalTarget from "@/components/sections/OptimalTarget";
+import AdaptiveMethod from "@/components/sections/AdaptiveMethod";
+import Conclusion from "@/components/sections/Conclusion";
+
+const SECTIONS = [
+  { id: "hero", label: "Intro" },
+  { id: "problem", label: "What is Skill?" },
+  { id: "simulator", label: "Throw Simulator" },
+  { id: "em", label: "Enter EM" },
+  { id: "convergence", label: "EM Convergence" },
+  { id: "optimal", label: "Optimal Target" },
+  { id: "adaptive", label: "Adaptive Method" },
+  { id: "conclusion", label: "Conclusion" },
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [activeSection, setActiveSection] = useState("hero");
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    const obs = observerRef.current;
+    sectionRefs.current.forEach((el) => obs.observe(el));
+
+    return () => obs.disconnect();
+  }, []);
+
+  const registerRef = (id: string) => (el: HTMLElement | null) => {
+    if (el) {
+      sectionRefs.current.set(id, el);
+      observerRef.current?.observe(el);
+    }
+  };
+
+  return (
+    <div className="relative min-h-screen bg-background">
+      <DotNav sections={SECTIONS} activeId={activeSection} />
+      <Hero ref={registerRef("hero")} />
+      <TheProblem ref={registerRef("problem")} />
+      <ThrowSimulator ref={registerRef("simulator")} />
+      <EnterEM ref={registerRef("em")} />
+      <EMConvergence ref={registerRef("convergence")} />
+      <OptimalTarget ref={registerRef("optimal")} />
+      <AdaptiveMethod ref={registerRef("adaptive")} />
+      <Conclusion ref={registerRef("conclusion")} />
     </div>
   );
 }
